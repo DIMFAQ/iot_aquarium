@@ -4,87 +4,209 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <title>Dashboard IoT Aquarium</title>
+  <title>Dashboard Akuarium IoT Premium</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    body{background:#f6f8fb}
-    .card{border-radius:10px; box-shadow:0 6px 16px rgba(20,30,50,0.06); border:none}
-    .kpi{font-weight:700; font-size:1.5rem}
-    .badge-state{padding:.4rem .7rem; border-radius:999px}
+    :root {
+      --color-primary: #00bcd4;
+      --color-primary-dark: #008c9f;
+      --color-success: #28a745;
+      --color-warning: #ffc107;
+      --color-danger: #dc3545;
+      --bg-color-fallback: #1e3758;
+      --card-bg-alpha: rgba(255, 255, 255, 0.85);
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    body{
+        font-family: 'Poppins', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg-color-fallback);
+        background-image: url('https://source.unsplash.com/1920x1080/?aquarium,water,blue');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        color: #343a40;
+    }
+    .container {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+    .navbar{
+        background-color: var(--card-bg-alpha) !important;
+        border-bottom: 5px solid var(--color-primary);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .card-kpi{
+      border-radius:15px;
+      box-shadow:var(--shadow-soft);
+      border:none;
+      transition: all 0.3s ease;
+      background: var(--card-bg-alpha);
+      backdrop-filter: blur(2px);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .card-kpi:hover{
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+      transform: translateY(-3px);
+    }
+    .kpi-title{
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-primary-dark);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+    .kpi-value{
+        font-weight: 800;
+        font-size: 2.2rem;
+        line-height: 1.1;
+        color: #1a1a1a;
+    }
+    .kpi-icon-container{
+        font-size: 3.5rem;
+        color: var(--color-primary);
+        opacity: 0.8;
+    }
+    .kpi-detail{
+        font-size: 0.75rem;
+        color: #555;
+        margin-top: 15px;
+        line-height: 1.4;
+    }
+    .text-optimal { color: var(--color-success) !important; }
+    .text-dingin { color: var(--color-primary) !important; }
+    .text-panas { color: var(--color-danger) !important; }
+    .text-jernih { color: var(--color-success) !important; }
+    .text-sedang { color: var(--color-warning) !important; }
+    .text-keruh { color: var(--color-danger) !important; }
+    .card-control .badge-state{
+        font-size: 1rem;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        background-color: #5a6268 !important;
+    }
+    .card-control .btn{
+        font-weight: 600;
+    }
+    .chart-container {
+        padding: 20px;
+        background: var(--card-bg-alpha);
+        border-radius: 15px;
+        box-shadow: var(--shadow-soft);
+    }
+    .table-striped > tbody > tr:nth-of-type(odd) > * {
+      --bs-table-accent-bg: rgba(0, 188, 212, 0.08);
+    }
+    .table thead th {
+        border-bottom: 2px solid var(--color-primary);
+        color: #343a40;
+        font-weight: 600;
+    }
+    h4.text-muted {
+        color: #fff !important;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        font-weight: 700;
+    }
+    .btn-refresh {
+      display:inline-flex; align-items:center; gap:.6rem;
+      border-radius:10px; padding: .45rem .85rem; font-weight:700;
+      background: linear-gradient(90deg,var(--color-primary), #06a6f7);
+      color:white; border:none; box-shadow: 0 8px 26px rgba(6,166,204,0.12);
+    }
+    .btn-refresh:disabled{ opacity:0.8; cursor:default; }
   </style>
 </head>
 <body>
-<nav class="navbar navbar-light bg-white shadow-sm mb-4">
-  <div class="container">
-    <span class="navbar-brand mb-0 h1">IoT Aquarium — Dashboard</span>
+<nav class="navbar navbar-light shadow-sm mb-5">
+  <div class="container d-flex justify-content-between align-items-center">
+    <span class="navbar-brand mb-0 h1">
+        <i class="fa-solid fa-water" style="color:var(--color-primary);"></i> Dasbor Kontrol Akuarium
+    </span>
     <div>
-      <a class="btn btn-outline-secondary btn-sm" href="sandbox:/mnt/data/Laporan IOT - 5C.pdf" target="_blank">Laporan PDF</a>
+      <button id="btn-refresh" class="btn-refresh" title="Refresh Data Sekarang">
+        <span id="refresh-icon"><i class="fa-solid fa-arrows-rotate"></i></span>
+        <span id="refresh-label">Refresh Data</span>
+      </button>
     </div>
   </div>
 </nav>
 
 <div class="container">
-  <div class="row g-3 mb-3">
+  <h4 class="mb-4 text-muted">Kondisi Akuarium Saat Ini</h4>
+  <div class="row g-4 mb-5">
     <div class="col-md-3">
-      <div class="card p-3">
-        <div class="small text-muted">Suhu (°C)</div>
-        <div class="kpi" id="kpi-temp">-</div>
-        <div class="small text-muted" id="kpi-temp-time">-</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="small text-muted">Kekeruhan (raw)</div>
-        <div class="kpi" id="kpi-turb">-</div>
-        <div class="small text-muted" id="kpi-turb-time">-</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="small text-muted">Tinggi Air (cm)</div>
-        <div class="kpi" id="kpi-dist">-</div>
-        <div class="small text-muted" id="kpi-dist-time">-</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card p-3 text-center">
-        <div class="small text-muted">Pompa</div>
-        <div id="kpi-pump" class="badge-state bg-secondary text-white mt-2">-</div>
-        <div class="mt-2">
-          <button class="btn btn-primary btn-sm" id="btn-toggle-pump">Toggle Pompa</button>
+      <div class="card card-kpi p-4">
+        <div>
+            <div class="kpi-title">KONDISI SUHU</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="kpi-value" id="kpi-temp-condition">-</div>
+                <div class="kpi-icon-container text-danger"><i class="fa-solid fa-temperature-three-quarters"></i></div>
+            </div>
         </div>
+        <div class="kpi-detail" id="kpi-temp-raw">Angka Mentah: - °C</div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card p-3 text-center">
-        <div class="small text-muted">Feed</div>
-        <div id="kpi-feed" class="badge-state bg-secondary text-white mt-2">-</div>
-        <div class="mt-2">
-          <button class="btn btn-success btn-sm" id="btn-feed-start">Start Feed</button>
-          <button class="btn btn-danger btn-sm" id="btn-feed-stop">Stop Feed</button>
+      <div class="card card-kpi p-4">
+        <div>
+            <div class="kpi-title">KONDISI KEKERUHAN</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="kpi-value" id="kpi-turb-condition">-</div>
+                <div class="kpi-icon-container text-info"><i class="fa-solid fa-droplet"></i></div>
+            </div>
+        </div>
+        <div class="kpi-detail" id="kpi-turb-raw">Angka Mentah: - (Raw)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-kpi p-4">
+        <div>
+            <div class="kpi-title">KETINGGIAN AIR</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="kpi-value" id="kpi-dist">-</div>
+                <div class="kpi-icon-container text-primary"><i class="fa-solid fa-ruler-vertical"></i></div>
+            </div>
+        </div>
+        <div class="kpi-detail" id="kpi-dist-time">Diukur: -</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-kpi card-control p-4 text-center">
+        <div class="kpi-title">PENGONTROL PAKAN</div>
+        <div id="kpi-feed" class="badge-state bg-secondary text-white mx-auto mt-3">-</div>
+        <div class="mt-3 d-flex justify-content-center gap-2">
+          <button class="btn btn-success" id="btn-feed-start"><i class="fa-solid fa-bowl-food"></i> Beri Pakan</button>
+          <button class="btn btn-danger" id="btn-feed-stop"><i class="fa-solid fa-stop"></i> Hentikan</button>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="card p-3 mb-3">
-    <div class="row">
-      <div class="col-md-6" style="height:280px">
-        <canvas id="chartTemp"></canvas>
+  <h4 class="mb-3 text-muted">Tren Data Sensor</h4>
+  <div class="row g-4 mb-5">
+      <div class="col-md-6">
+        <div class="chart-container" style="height:350px">
+          <canvas id="chartTemp"></canvas>
+        </div>
       </div>
-      <div class="col-md-6" style="height:280px">
-        <canvas id="chartTurb"></canvas>
+      <div class="col-md-6">
+        <div class="chart-container" style="height:350px">
+          <canvas id="chartTurb"></canvas>
+        </div>
       </div>
-    </div>
   </div>
-
-  <div class="card p-3">
-    <h6>History (50 terbaru)</h6>
-    <div style="max-height:300px; overflow:auto;">
-      <table class="table table-striped">
-        <thead><tr><th>Waktu</th><th>Suhu</th><th>Kekeruhan</th><th>Tinggi</th><th>Pompa</th><th>Feed</th></tr></thead>
+  <h4 class="mb-3 text-muted">Riwayat Detail Sensor (50 Terbaru)</h4>
+  <div class="card p-4">
+    <div style="max-height:450px; overflow:auto;">
+      <table class="table table-striped table-hover">
+        <thead><tr><th>Waktu (UTC)</th><th>Suhu (°C)</th><th>Kekeruhan (Raw)</th><th>Ketinggian (cm)</th><th>Pakan</th></tr></thead>
         <tbody id="history-body"></tbody>
       </table>
     </div>
@@ -94,82 +216,196 @@
 <script>
 const POLL = 5000;
 let labels = [], tempData = [], turbData = [];
+const TEMP_OPT_MIN = 24.0;
+const TEMP_OPT_MAX = 28.0;
+
+function getTempCondition(temp) {
+    if (temp === null || isNaN(temp)) return { text: 'TIDAK TERDETEKSI', class: 'text-secondary' };
+    if (temp < TEMP_OPT_MIN) return { text: 'DINGIN', class: 'text-dingin' };
+    if (temp > TEMP_OPT_MAX) return { text: 'PANAS', class: 'text-panas' };
+    return { text: 'OPTIMAL', class: 'text-optimal' };
+}
+
+function getTurbCondition(turb) {
+    if (turb === null || isNaN(turb)) return { text: 'TIDAK TERDETEKSI', class: 'text-secondary' };
+    if (turb >= 700) return { text: 'SANGAT JERNIH', class: 'text-success' };
+    if (turb >= 600) return { text: 'JERNIH', class: 'text-success' };
+    if (turb >= 400) return { text: 'AGAK KERUH', class: 'text-warning' };
+    if (turb >= 200) return { text: 'KERUH', class: 'text-danger' };
+    return { text: 'SANGAT KERUH', class: 'text-danger' };
+}
 
 const ctxT = document.getElementById('chartTemp');
 const ctxU = document.getElementById('chartTurb');
 
 const chartTemp = new Chart(ctxT, {
   type:'line',
-  data:{ labels: labels, datasets:[{ label:'Suhu (°C)', data: tempData, tension:0.3, borderWidth:2 }]},
-  options: { responsive:true }
+  data:{ labels: labels, datasets:[{ label:'Suhu (°C)', data: tempData, tension:0.3, borderWidth:3, borderColor: '#dc3545', backgroundColor: 'rgba(220, 53, 69, 0.1)', fill: true, pointRadius: 4 }]},
+  options: {
+    responsive:true,
+    maintainAspectRatio: false,
+    plugins: { title: { display: true, text: 'Grafik Suhu Air', font: { size: 16 } }, legend: { display: false } },
+    scales: { y: { beginAtZero: false, title: { display: true, text: 'Suhu (°C)' } } }
+  }
 });
 
 const chartTurb = new Chart(ctxU, {
   type:'line',
-  data:{ labels: labels, datasets:[{ label:'Kekeruhan', data: turbData, tension:0.3, borderWidth:2 }]},
-  options: { responsive:true }
+  data:{ labels: labels, datasets:[{ label:'Kekeruhan (Raw)', data: turbData, tension:0.3, borderWidth:3, borderColor: '#00bcd4', backgroundColor: 'rgba(0, 188, 212, 0.2)', fill: true, pointRadius: 4 }]},
+  options: {
+    responsive:true,
+    maintainAspectRatio: false,
+    plugins: { title: { display: true, text: 'Grafik Kekeruhan Air', font: { size: 16 } }, legend: { display: false } },
+    scales: { y: { beginAtZero: true, title: { display: true, text: 'Kekeruhan (Raw)' } } }
+  }
 });
 
-function loadLatest() {
-  fetch('api_latest.php').then(r=>r.json()).then(d=>{
-    if(!d) return;
-    document.getElementById('kpi-temp').innerText = d.temp_c ?? '-';
-    document.getElementById('kpi-temp-time').innerText = d.created_at ?? '-';
-    document.getElementById('kpi-turb').innerText = d.turbidity_raw ?? '-';
-    document.getElementById('kpi-turb-time').innerText = d.created_at ?? '-';
-    document.getElementById('kpi-dist').innerText = d.distance_cm ?? '-';
-    document.getElementById('kpi-dist-time').innerText = d.created_at ?? '-';
+function setRefreshLoading(isLoading){
+  const btn = document.getElementById('btn-refresh');
+  const icon = document.getElementById('refresh-icon');
+  const label = document.getElementById('refresh-label');
+  btn.disabled = isLoading;
+  if(isLoading){
+    icon.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+    label.innerText = 'Memuat...';
+  } else {
+    icon.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+    label.innerText = 'Refresh Data';
+  }
+}
 
-    // Feed status
+async function refreshData(){
+  try{
+    setRefreshLoading(true);
+    await Promise.all([ loadLatest(), loadHistory() ]);
+  }catch(err){
+    console.error('Gagal refresh:', err);
+    alert('Gagal memuat data. Cek koneksi atau server API.');
+  }finally{
+    setRefreshLoading(false);
+  }
+}
+
+async function loadLatest() {
+  try {
+    const r = await fetch('api_latest.php', { cache: 'no-store' });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if(!d) return;
+
+    const tempCond = getTempCondition(Number(d.temp_c));
+    const turbCond = getTurbCondition(Number(d.turbidity_raw));
+
+    const elTemp = document.getElementById('kpi-temp-condition');
+    elTemp.innerText = tempCond.text;
+    elTemp.className = `kpi-value ${tempCond.class}`;
+    document.getElementById('kpi-temp-raw').innerHTML = `Angka Mentah: ${d.temp_c ?? '-'} °C<br>Diukur: ${d.created_at ?? '-'}`;
+
+    const elTurb = document.getElementById('kpi-turb-condition');
+    elTurb.innerText = turbCond.text;
+    elTurb.className = `kpi-value ${turbCond.class}`;
+    document.getElementById('kpi-turb-raw').innerHTML = `Angka Mentah: ${d.turbidity_raw ?? '-'} (Raw)<br>Diukur: ${d.created_at ?? '-'}`;
+
+    document.getElementById('kpi-dist').innerText = (d.distance_cm ?? '-') + ' cm';
+    document.getElementById('kpi-dist-time').innerHTML = `Jarak: ${d.distance_cm ?? '-'} cm<br>Diukur: ${d.created_at ?? '-'}`;
+
     const feedEl = document.getElementById('kpi-feed');
-    feedEl.innerText = d.feed_event==1 ? 'FEEDING':'IDLE';
+    feedEl.innerText = d.feed_event==1 ? 'SEDANG MEMBERI PAKAN':'SIAP PAKAN';
     feedEl.className = d.feed_event==1 ? 'badge-state bg-success text-white' : 'badge-state bg-secondary text-white';
 
-    // charts
-    labels.push(new Date(d.created_at).toLocaleTimeString());
+    labels.push(new Date(d.created_at).toLocaleTimeString('id-ID'));
     tempData.push(Number(d.temp_c));
     turbData.push(Number(d.turbidity_raw));
     if(labels.length>24){ labels.shift(); tempData.shift(); turbData.shift(); }
-    chartTemp.update(); chartTurb.update();
+    chartTemp.update();
+    chartTurb.update();
 
-    // add to top of history table
     const tbody = document.getElementById('history-body');
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${d.created_at}</td><td>${d.temp_c ?? '-'}</td><td>${d.turbidity_raw ?? '-'}</td><td>${d.distance_cm ?? '-'}</td><td>${d.feed_event==1?'FEEDING':'IDLE'}</td>`;
+    const feedStatus = d.feed_event==1 ? 'SEDANG MEMBERI PAKAN' : 'IDLE';
+    tr.innerHTML = `<td>${d.created_at}</td><td>${d.temp_c ?? '-'}</td><td>${d.turbidity_raw ?? '-'}</td><td>${d.distance_cm ?? '-'}</td><td>${feedStatus}</td>`;
     tbody.insertBefore(tr, tbody.firstChild);
     while(tbody.children.length>50) tbody.removeChild(tbody.lastChild);
-  }).catch(e=>console.error(e));
+
+  } catch (e) {
+    console.error('Gagal memuat data terbaru:', e);
+    throw e;
+  }
 }
 
-function loadHistory() {
-  fetch('api_history.php?limit=50').then(r=>r.json()).then(arr=>{
+async function loadHistory() {
+  try {
+    const r = await fetch('api_history.php?limit=50', { cache: 'no-store' });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const arr = await r.json();
     const tbody = document.getElementById('history-body');
     tbody.innerHTML = '';
     arr.forEach(rw=>{
+      const feedStatus = rw.feed_event==1 ? 'SEDANG MEMBERI PAKAN' : 'IDLE';
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${rw.created_at}</td><td>${rw.temp_c ?? '-'}</td><td>${rw.turbidity_raw ?? '-'}</td><td>${rw.distance_cm ?? '-'}</td><td>${rw.feed_event==1?'FEEDING':'IDLE'}</td>`;
+      tr.innerHTML = `<td>${rw.created_at}</td><td>${rw.temp_c ?? '-'}</td><td>${rw.turbidity_raw ?? '-'}</td><td>${rw.distance_cm ?? '-'}</td><td>${feedStatus}</td>`;
       tbody.appendChild(tr);
     });
-  }).catch(e=>console.error(e));
+
+    if(labels.length === 0 && Array.isArray(arr) && arr.length){
+      labels = arr.slice(-24).map(a => new Date(a.created_at).toLocaleTimeString('id-ID'));
+      tempData = arr.slice(-24).map(a => Number(a.temp_c));
+      turbData = arr.slice(-24).map(a => Number(a.turbidity_raw));
+      chartTemp.data.labels = labels; chartTemp.data.datasets[0].data = tempData;
+      chartTurb.data.labels = labels; chartTurb.data.datasets[0].data = turbData;
+      chartTemp.update();
+      chartTurb.update();
+    }
+  } catch (e) {
+    console.error('Gagal memuat riwayat:', e);
+    throw e;
+  }
 }
 
-// control
-document.addEventListener('DOMContentLoaded', ()=>{
-  loadHistory();
-  loadLatest();
-  setInterval(loadLatest, POLL);
-  document.getElementById('btn-toggle-pump').addEventListener('click', ()=>{
-    fetch('control.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'device=nodemcu&pump=1' })
-      .then(()=>alert('Perintah toggle pompa dikirim (enqueue).')).catch(()=>alert('Gagal'));
-  });
-  document.getElementById('btn-feed-start').addEventListener('click', ()=>{
-    fetch('control.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'device=nodemcu&feed=start' })
-      .then(()=>alert('Perintah START FEED dikirim.')).catch(()=>alert('Gagal'));
-  });
-  document.getElementById('btn-feed-stop').addEventListener('click', ()=>{
-    fetch('control.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'device=nodemcu&feed=stop' })
-      .then(()=>alert('Perintah STOP FEED dikirim.')).catch(()=>alert('Gagal'));
-  });
+document.getElementById('btn-feed-start').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-feed-start');
+  btn.disabled = true;
+  const old = btn.innerHTML;
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim`;
+  try {
+    await fetch('control.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'device=nodemcu&feed=start' });
+    alert('Perintah START PAKAN telah dikirim (enqueue).');
+    setTimeout(()=>loadLatest(), 800);
+  } catch (e) {
+    alert('Gagal mengirim perintah.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = old;
+  }
+});
+document.getElementById('btn-feed-stop').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-feed-stop');
+  btn.disabled = true;
+  const old = btn.innerHTML;
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim`;
+  try {
+    await fetch('control.php', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'device=nodemcu&feed=stop' });
+    alert('Perintah STOP PAKAN telah dikirim (enqueue).');
+    setTimeout(()=>loadLatest(), 800);
+  } catch (e) {
+    alert('Gagal mengirim perintah.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = old;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+  setRefreshLoading(true);
+  try {
+    await Promise.all([ loadHistory(), loadLatest() ]);
+  } catch(e){
+    console.warn('Initial load error', e);
+  } finally {
+    setRefreshLoading(false);
+  }
+  document.getElementById('btn-refresh').addEventListener('click', refreshData);
+  setInterval(()=>{ loadLatest(); }, POLL);
 });
 </script>
 </body>
